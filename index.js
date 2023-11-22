@@ -42,8 +42,13 @@ async function run() {
         // add new booking to database
         app.post('/booking', async (req, res) => {
             const booking = req.body; // fetchig booking data from client site
+            const query = { treatment: booking.treatment, date: booking.date, patient: booking.patient }
+            const alreadyExists = await bookingCollection.findOne(query); // finding data according to query in bookingCollection cluster in database
+            if (alreadyExists) {
+                return res.send({ success: false, booking: alreadyExists })
+            }
             const result = await bookingCollection.insertOne(booking);
-            res.send(result);
+            return res.send({ success: true, result });
         })
 
 
