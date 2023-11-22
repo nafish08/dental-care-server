@@ -52,9 +52,9 @@ async function run() {
             //For each option, find bookings for that option
             options.forEach(option => {
                 const optionBookings = bookings.filter(book => book.treatment === option.name);
-                // const booked = optionBookings.map(opt => opt.slot);
-                // option.booked = booked;
-                option.booked = optionBookings.map(opt => opt.slot);
+                const booked = optionBookings.map(opt => opt.slot);
+                const available = option.slots.filter(opt => !booked.includes(opt));
+                option.available = available;
             })
 
             res.send(options);
