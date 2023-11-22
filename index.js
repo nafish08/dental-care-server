@@ -28,15 +28,25 @@ async function run() {
         // console.log('Database Connection Successful')
 
         // Connecting to cluster
-        const appointmentOptions = client.db('doctors_portal').collection('appointment_options');
+        const appointmentOptionsCollection = client.db('doctors_portal').collection('appointment_options');
+        const bookingCollection = client.db('doctors_portal').collection('bookings');
 
         // Creating api
         app.get('/appointment_options', async (req, res) => {
             const query = {};
-            const cursor = appointmentOptions.find(query);
+            const cursor = appointmentOptionsCollection.find(query);
             const options = await cursor.toArray();
             res.send(options);
         })
+
+        // add new booking to database
+        app.post('/booking', async (req, res) => {
+            const booking = req.body; // fetchig booking data from client site
+            const result = await bookingCollection.insertOne(booking);
+            res.send(result);
+        })
+
+
     }
     finally {
 
