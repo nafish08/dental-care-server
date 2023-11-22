@@ -39,10 +39,31 @@ async function run() {
             res.send(options);
         })
 
+        app.get('/available', async (req, res) => {
+            const date = req.query.date || 'Nov 22, 2023';
+
+            // Get all options
+            const options = await appointmentOptionsCollection.find().toArray();
+
+            // Get bookings of that day
+            const query = { date: date };
+            const bookings = await bookingCollection.find(query).toArray();
+
+            //For each option, find bookings for that option
+            options.forEach(option => {
+                const optionBookings = bookings.filter(book => book.treatment === option.name);
+                // const booked = optionBookings.map(opt => opt.slot);
+                // option.booked = booked;
+                option.booked = optionBookings.map(opt => opt.slot);
+            })
+
+            res.send(options);
+        })
+
         // add new booking to database
         app.post('/booking', async (req, res) => {
             const booking = req.body; // fetchig booking data from client site
-            const query = { treatment: booking.treatment, date: booking.date, patient: booking.patient }
+            const query = { treatment: booking.treatment, date: booking.date, patient: booking.patient };
             const alreadyExists = await bookingCollection.findOne(query); // finding data according to query in bookingCollection cluster in database
             if (alreadyExists) {
                 return res.send({ success: false, booking: alreadyExists })
