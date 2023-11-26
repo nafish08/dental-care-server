@@ -40,7 +40,7 @@ async function run() {
         })
 
         app.get('/available', async (req, res) => {
-            const date = req.query.date || 'Nov 22, 2023';
+            const date = req.query.date;
 
             // Get all options
             const options = await appointmentOptionsCollection.find().toArray();
@@ -49,16 +49,28 @@ async function run() {
             const query = { date: date };
             const bookings = await bookingCollection.find(query).toArray();
 
-            //For each option, find bookings for that option
+            //For each option
             options.forEach(option => {
+                // Find bookings for this option
                 const optionBookings = bookings.filter(book => book.treatment === option.name);
-                const booked = optionBookings.map(opt => opt.slot);
-                const available = option.slots.filter(opt => !booked.includes(opt));
-                option.available = available;
+                // select slots for the option bookings
+                const bookedSlots = optionBookings.map(book => book.slot);
+                // select slots that are not in bookedSlots
+                const available = option.slots.filter(slot => !bookedSlots.includes(slot));
+                option.slots = available;
             })
 
             res.send(options);
         })
+
+        // Getting User specific data
+        app.get('/booking', async (req, res) => {
+            const patient = req.query.patient;
+            const query = { patient: patient };
+            const bookings = await bookingCollection.find(query).toArray();
+            return res.send(bookings);
+        })
+
 
         // add new booking to database
         app.post('/booking', async (req, res) => {
